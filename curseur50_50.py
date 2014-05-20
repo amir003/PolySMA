@@ -51,3 +51,4 @@ if __name__=='__main__':
     frame=MyFrameName(parent=None,id=-1)
     frame.Show()
     app.MainLoop()
+
