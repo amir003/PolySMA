@@ -27,9 +27,6 @@ class MyFrameName(wx.Frame):
         self.SetMenuBar(menubar)
         self.Bind(wx.EVT_MENU, self.dosomething, id=101)
 
-
-        
-
         self.slider_01=wx.Slider(self.panel, -1, 25, 1, 50, pos=(50,50), size=(500,-1), \
             style=wx.SL_AUTOTICKS | wx.SL_LABELS)
         self.slider_01.SetTickFreq(5,1)
