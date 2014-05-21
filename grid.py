@@ -12,10 +12,10 @@ class SimpleGrid(wx.grid.Grid):
 
         self.SetColLabelValue(0, "1")
         self.SetColLabelValue(1, "2")
-        self.SetColLabelValue(1, "3")
+        self.SetColLabelValue(2, "3")
         
         self.SetCellValue(0, 0, "¥")
-
+        self.SetCellTextColour(0,0,'red') #colorie le texte
         self.SetCellValue(0, 5, "¥")
        
         self.SetRowLabelValue(1, "2")
