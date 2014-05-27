@@ -8,32 +8,24 @@ class SimpleGrid(wx.grid.Grid):
     def __init__(self, parent):
         wx.grid.Grid.__init__(self, parent, -1)
         self.CreateGrid(50, 50)
-
-
-        self.SetColLabelValue(0, "1")
-        self.SetColLabelValue(1, "2")
-        self.SetColLabelValue(2, "3")
+        
+        self.SetRowLabelSize(50)
+        self.SetColLabelSize(30)#size of a col label (height to be precise) and so the col
+        
+        #avoid resize moification by the user of the grid
+        self.EnableDragColSize(0)
+        self.EnableDragRowSize(0)
+        self.EnableDragGridSize(0)
+        
+        #set the size of all the col
+        for i in range(50):
+          self.SetColLabelValue(i, str(i+1))#set the label
+          self.SetColSize(i, 30)#set the size of all the col
         
         self.SetCellValue(0, 0, "¥")
         self.SetCellTextColour(0,0,'red') #colorie le texte
         self.SetCellValue(0, 5, "¥")
-       
-        self.SetRowLabelValue(1, "2")
-        
-        self.SetRowLabelValue(2, "3")
-        
-        self.SetRowLabelValue(3, "4")
-        
-        self.SetCellValue(3, 1, "¥")
-        self.SetRowLabelValue(4, "5")
-        
-        self.SetRowLabelValue(5, "6")
         self.SetCellValue(5, 1, "¥")
-        self.SetRowLabelValue(6, "7")
-        
-        self.SetRowLabelValue(7, "8")
-        
-        self.SetRowLabelValue(14, "15")
         self.SetCellValue(14, 1, "¥")
         
 
