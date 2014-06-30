@@ -1,4 +1,4 @@
-#import blender
+.3#import blender
 import bpy
 import random
 import math
@@ -18,7 +18,7 @@ def initProteine(envSize,nbProt,scaleFactor):
     listProt=[]
     for i in range(0,nbProt,1):
         caseEmpty=False
-        while !caseEmpty:
+        while not caseEmpty:
             x=random.randint(1,envSize)
             x=float(x)/scaleFactor
             y=random.randint(1,envSize)
@@ -28,26 +28,29 @@ def initProteine(envSize,nbProt,scaleFactor):
             listCoord=[x,y,z]
             caseEmpty=caseIsEmpty(listProt,listCoord)
             if caseEmpty:
-                drawProt()
+                drawProt(listProt,listCoord,scaleFactor)
     return listProt
 
 def drawProt(listProt,listCoord,scaleFactor):
     i=len(listProt)
+    print("i",i)
+    x,y,z=listCoord
     #creation d'une sphere
     nameS="Sphere"+str(i)
-    currentSphere=bpy.ops.mesh.primitive_uv_sphere_add(segments=16, size=0.5/scaleFactor, location=(x, y, z), layers=(True, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False))
+    bpy.ops.mesh.primitive_uv_sphere_add(segments=16, size=0.5/scaleFactor, view_align=False, enter_editmode=False, location=(x, y, z), layers=(True, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False))
     bpy.context.object.name = nameS
     #creation des poles:
     currentProt=[]
-    listObjOfCurrentProt=poleProteine(obj,nameS)
+    listObjOfCurrentProt=poleProteine(nameS)
     currentProt.append(listObjOfCurrentProt)
     currentProt.append(listCoord)
     #appli d'une rotation aleatoire
     a,b,c=angleRotation()
     for i in range(2):
         currentPole=listObjOfCurrentProt[i]
-        cuyrrentPole.select=True
+        currentPole.select=True
         bpy.ops.transform.rotate(axis=(a, b, c))
+    listProt.append(currentProt)
 
 def angleRotation():
     a=random.randint(-360,360)
@@ -61,7 +64,7 @@ def angleRotation():
 def caseIsEmpty(listProt,listCoord):
     for protToCheck in listProt:
         listCoordToCheck=protToCheck[1]
-        if listTest==listCoord:
+        if listCoordToCheck==listCoord:
             return False
     return True
   
@@ -146,40 +149,48 @@ def voisin(x,y,z):
 def attacher():
     print("coucou")
 
-def mouvementProt(envSize):
-    envSize=envSize/10
-    frame_num =0
-    for position in range(0,20,1):
-        x=random.randint(-1,1)
-        x=x/10
-        y=random.randint(-1,1)
-        y=y/10
-        z=random.randint(-1,1)
-        z=z/10
-        print("x",x,"y",y,"z",z)
+def mouvementProt(listProt,envSize,scaleFactor):
+    envSize=envSize/scaleFactor
+    frame_num =0#numero de la frame (pour le temps)
+    for position in range(0,20):
         bpy.context.scene.frame_set(frame_num)
-        for prot in bpy.data.objects:
-            
-            bool=voisin(prot.location[0]+x,prot.location[1]+y,prot.location[2]+z)
-            
-            prot.location[0]=prot.location[0]+x
-            prot.location[1]=prot.location[1]+y
-            prot.location[2]=prot.location[2]+z
-            if prot.location[0]<1:
-                prot.location[0]=envSize
-            if prot.location[1]<1:
-                prot.location[1]=envSize
-            if prot.location[2]<1:
-                prot.location[2]=envSize
-            if prot.location[0]>envSize:
-                prot.location[0]=1
-            if prot.location[1]>envSize:
-                prot.location[1]=1
-            if prot.location[2]>envSize:
-                prot.location[2]=1
-            prot.keyframe_insert(data_path="location", index=-1)
+        x=random.randint(-1,1)
+        x=x/scaleFactor
+        y=random.randint(-1,1)
+        y=y/scaleFactor
+        z=random.randint(-1,1)
+        z=z/scaleFactor
+        print("x",x,"y",y,"z",z)
+        for prot in listProt:
+            objectsOfCurrentSphere = prot[0]
+            coordOfCurrentSphere = prot[1]
+            listCoord=[coordOfCurrentSphere[0]+x,coordOfCurrentSphere[1]+y,coordOfCurrentSphere[2]+z]
+            moveIsPossible=caseIsEmpty(listProt,listCoord)
+            deplacePosition(prot, x, y, z)
+            coordOfCurrentSphere =listCoord
         frame_num+=10
-       
+
+def deplacePosition(prot, x, y, z):
+    objectsOfCurrentSphere = prot[0]
+    for i in range(2):
+        currentPole=objectsOfCurrentSphere[i]
+        currentPole.location[0]=currentPole.location[0]+x
+        currentPole.location[1]=currentPole.location[1]+y
+        currentPole.location[2]=currentPole.location[2]+z
+        if currentPole.location[0]<1:
+            currentPole.location[0]=envSize
+        if currentPole.location[1]<1:
+            currentPole.location[1]=envSize
+        if currentPole.location[2]<1:
+            currentPole.location[2]=envSize
+        if currentPole.location[0]>envSize:
+            currentPole.location[0]=1
+        if currentPole.location[1]>envSize:
+            currentPole.location[1]=1
+        if currentPole.location[2]>envSize:
+            currentPole.location[2]=1
+        currentPole.keyframe_insert(data_path="location", index=-1)
+   
 def clean():
     # remove mesh Cube and Sphere before new run
     for i in bpy.data.objects:
@@ -199,4 +210,4 @@ clean()
 scaleFactor=10
 envSize,nbProt=choixEnviron()
 listProt=initProteine(envSize,nbProt,scaleFactor)
-mouvementProt(listProt,envSize)                                                                                                                                                                                                                                                                                 
+mouvementProt(listProt,envSize,scaleFactor)                                                                                                                                                                                                                                                                                 
