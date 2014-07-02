@@ -9,8 +9,10 @@ from bpy import context as C
 def choixEnviron():
     print("Taille de l'environnement")
     envSize=50
-    print("nombre de proteine dans l'environnement")
-    nbProt=50
+    print("nombre de proteine dans l'environnement : concentration")
+    nbProt=200
+    print("rayon de la proteine")
+    
     return envSize,nbProt
 
 
@@ -19,26 +21,34 @@ def initProteine(envSize,nbProt,scaleFactor,grainDiameter):
     for i in range(0,nbProt,1):
         caseEmpty=False
         while not caseEmpty:
-            x=random.randint(1,envSize)
+            x=random.randrange(0,envSize,grainDiameter)
             x=float(x)/scaleFactor
-            y=random.randint(1,envSize)
+            y=random.randrange(0,envSize,grainDiameter)
             y=float(y)/scaleFactor
-            z=random.randint(1,envSize)
+            z=random.randrange(0,envSize,grainDiameter)
             z=float(z)/scaleFactor
+            #print("init x",x,"y",y,"z",z)
             listCoord=[x,y,z]
             caseEmpty=caseIsEmpty(listProt,listCoord)
             if caseEmpty:
+                #print(listCoord)
                 drawProt(listProt,listCoord,scaleFactor,grainDiameter)
     return listProt
 
 def drawProt(listProt,listCoord,scaleFactor,grainDiameter):
-    i=len(listProt)
     #print("i",i)
     x,y,z=listCoord
     #creation d'une sphere
-    nameS="Sphere"+str(i)
+    nameS="Sphere"+str(len(listProt))
     bpy.ops.mesh.primitive_uv_sphere_add(segments=16, size=grainDiameter/(scaleFactor*2), view_align=False, enter_editmode=False, location=(x, y, z), layers=(True, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False))
     bpy.context.object.name = nameS
+    obj=bpy.data.objects[nameS]
+    ix=obj.location[0]
+    iy=obj.location[1]
+    iz=obj.location[2]
+    print(nameS," x",ix,"y",iy,"z",iz)
+    print("liste",listCoord)
+    print("\n")
     #creation des poles:
     currentProt=[]
     listObjOfCurrentProt=poleProteine(nameS)
@@ -64,7 +74,9 @@ def angleRotation():
 def caseIsEmpty(listProt,listCoord):
     for protToCheck in listProt:
         listCoordToCheck=protToCheck[1]
+        #print("Coor a tester ",listCoord," coord deja existante ",listCoordToCheck)
         if listCoordToCheck==listCoord:
+            #print("Danger")
             return False
     return True
   
@@ -102,6 +114,8 @@ def poleProteine(objectName):
     #colorie en bleu
     blue = makeMaterial('BlueSemi', (0,0,1), (0.5,0.5,0), 0.5)
     pole2.data.materials.append(blue)
+    pole1.keyframe_insert(data_path="location", index=-1)
+    pole2.keyframe_insert(data_path="location", index=-1)
     #bpy.ops.object.join()#pour joindre les deux demi-spheres
     return [pole1,pole2]
 
@@ -121,20 +135,6 @@ def setMaterial(ob, mat):
     me = ob.data
     me.materials.append(mat)
         
-
-def colorMat():
-    # Create two materials
-    red = makeMaterial('Red', (1,0,0), (1,1,1), 1)
-    blue = makeMaterial('BlueSemi', (0,0,1), (0.5,0.5,0), 0.5)
- 
-    # Create red cube
-    bpy.ops.mesh.primitive_cube_add(location=origin) #creer un cube a l'origine
-    setMaterial(bpy.context.object, red)
-    # and blue sphere
-    bpy.ops.mesh.primitive_uv_sphere_add(location=origin) #creer une sphere a l'origine
-    bpy.ops.transform.translate(value=(1,0,0))
-    setMaterial(bpy.context.object, blue)
-
 def voisin(x,y,z):
     caseVide=1
     for obj in bpy.data.objects:
@@ -146,9 +146,10 @@ def voisin(x,y,z):
             caseVide=0
     return caseVide
 
-def attacher(listProt):
+def attacher(listProt,grainDiameter,scaleFactor):
     #trouver les spheres attachées
     portLiees={}
+    distance=grainDiameter/scaleFactor
     for i in range(len(listProt)-1):
         #print(len(listProt))
         #print("coucou")
@@ -162,21 +163,21 @@ def attacher(listProt):
             dx=x1-x2
             dy=y1-y2
             dz=z1-z2
-            if (dx <0.1 and dx >-0.1) and (dy <0.1 and dy >-0.1) and (dz <0.1 and dz >-0.1):
+            if (dx <distance and dx >-distance) and (dy <distance and dy >-distance) and (dz <distance and dz >-distance):
                 print ("proteine attachee !!!!!!!!!!!!!",dx,dy,dz)
 
-def mouvementProt(listProt,envSize,scaleFactor):
+def mouvementProt(listProt,envSize,scaleFactor,grainDiameter):
     envSize=envSize/scaleFactor
-    frame_num =0#numero de la frame (pour le temps)
-    for position in range(0,20):
+    frame_num =10#numero de la frame (pour le temps)
+    for position in range(1):
         bpy.context.scene.frame_set(frame_num)
-        x=random.randint(-1,1)
+        x=random.randint(-grainDiameter,grainDiameter)
         x=x/scaleFactor
-        y=random.randint(-1,1)
+        y=random.randint(-grainDiameter,grainDiameter)
         y=y/scaleFactor
-        z=random.randint(-1,1)
+        z=random.randint(-grainDiameter,grainDiameter)
         z=z/scaleFactor
-        print("x",x,"y",y,"z",z)
+        #1print("x",x,"y",y,"z",z)
         for prot in listProt:
             objectsOfCurrentSphere = prot[0]
             coordOfCurrentSphere = prot[1]
@@ -193,18 +194,18 @@ def deplacePosition(prot, x, y, z,scaleFactor):
         currentPole.location[0]=currentPole.location[0]+x
         currentPole.location[1]=currentPole.location[1]+y
         currentPole.location[2]=currentPole.location[2]+z
-        if currentPole.location[0]<1:
+        if currentPole.location[0]<0:
             currentPole.location[0]=envSize/scaleFactor
-        if currentPole.location[1]<1:
+        if currentPole.location[1]<0:
             currentPole.location[1]=envSize/scaleFactor
-        if currentPole.location[2]<1:
+        if currentPole.location[2]<0:
             currentPole.location[2]=envSize/scaleFactor
         if currentPole.location[0]>envSize/scaleFactor:
-            currentPole.location[0]=1
+            currentPole.location[0]=0
         if currentPole.location[1]>envSize/scaleFactor:
-            currentPole.location[1]=1
+            currentPole.location[1]=0
         if currentPole.location[2]>envSize/scaleFactor:
-            currentPole.location[2]=1
+            currentPole.location[2]=0
         currentPole.keyframe_insert(data_path="location", index=-1)
    
 def clean():
@@ -223,13 +224,12 @@ def clean():
 def clean2():
     for obj in bpy.data.objects:
         currentName=obj.name
-        print(currentName)
+        #print(currentName)
         if("Cube" in currentName or "Sphere" in currentName):
             obj.select=True
             bpy.ops.object.delete(use_global=False)
  
  
-
 #classe grain biologique
 class biologicalGrain:
     def __init__(self, coordinates,listOfNeighbours,associationProbability ):
@@ -242,7 +242,11 @@ class simulatedGrain:
     def __init__(self, bGrain,activesFace):
         self.biologicalGrain = bGrain
         self.activesFaces =  activesFace      
+        self.moved=False
+
 #prog principal
+#filename = "testEnvirProteinV4.py"
+#exec(compile(open(filename).read(), filename, 'exec'))
 
 #print(bpy.ops.object.mode)
 bpy.ops.object.mode_set(mode='OBJECT')
@@ -251,7 +255,21 @@ clean2()
 scaleFactor = 10
 grainDiameter = 2
 envSize,nbProt=choixEnviron()
+bpy.context.scene.frame_set(0)
 listProt=initProteine(envSize,nbProt,scaleFactor,grainDiameter)
-#print(listProt[0][1])
-mouvementProt(listProt,envSize,scaleFactor)
-attacher(listProt)                                                                                                                                                                                                                                                                                 
+print(listProt)
+mouvementProt(listProt,envSize,scaleFactor,grainDiameter)
+#attacher(listProt,grainDiameter,scaleFactor) 
+        
+for i in range(len(listProt)-1):
+    protCoord=listProt[i][1]
+    x1=protCoord[0]
+    y1=protCoord[1]
+    z1=protCoord[2]
+    for j in range(i+1,len(listProt)):
+        protTest=listProt[j][1]
+        x2=protTest[0]
+        y2=protTest[1]
+        z2=protTest[2]
+        if x1==x2 and y1==y2 and z1==z2:
+            print("danger !!!!!!!!!!!!")                                                                                                                                                                                                                                                                         
