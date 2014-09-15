@@ -7,45 +7,38 @@ import bmesh
 from bpy import context as C
                                                                                                                                                                                          
 #determination des parametres de l'environnement
-#def choixEnviron():
-    #file = open("settings.txt", "r")
-    #lines = file.readlines()
-    #for line in lines :
-        #line=float(line.split(": ")[1].split("#")[0])
-    #return lines
 def choixEnviron():
-    print("Taille de l'environnement")
-    envSize=50
-    print("nombre de proteine dans l'environnement : concentration")
-    nbProt=100
-    print("rayon de la proteine")
-    
-    return envSize,nbProt
+    print("Donnez le nom du fichier")
+    #fileName=raw_input()
+    file = open("param.txt", "r")
+    lines = file.readlines()
+    paramList=[]
+    for line in lines :
+        line=float(line.split(":")[1].split("#")[0])
+        paramList.append(line)
+    return paramList
 
 #classe grain biologique
 class BiologicalGrain:
-    def __init__(self, coordinatesP, coordinatesR,listOfNeighbours,associationProbability ):
-        self.x, self.y, self.z = coordinatesP
+    def __init__(self, coordinatesR,listOfNeighbours,associationProbability ):
         self.rotateX, self.rotateY, self.rotateZ = coordinatesR
         self.associationProb = associationProbability
         self.associatedNeighbours = listOfNeighbours
-    def getCoordP(self):
-        listCoord=[self.x,self.y,self.z]
-        return listCoord
-    def getNeighbours():
-        return self.associatedNeighbours
+
         
 #classe grain biologique
 class SimulatedGrain:
-    def __init__(self, bGrain,activesFace, grainName):
+    def __init__(self, bGrain,sizeActiveSite,nbActivesSites, objGrain):
         self.BiologicalGrain = bGrain
-        self.activesFaces =  activesFace      
+        self.nbActivesSites =  nbActivesSites  
+        self.sizeActiveSite = sizeActiveSite
         self.moved=False
-        self.name=grainName
+        self.objectBl=objGrain
         self.attach=False
-        
+  
+##############################################################################################  
 # initialisation de l'environnement en terme de coordonnees des objets
-def initProteine(envSize,nbProt,scaleFactor,grainDiameter):
+def initProteine(envSize,nbProt,scaleFactor,grainDiameter,associationProb,sizeActiveSite,nbActivesSites):
     listProt=[]
     for i in range(0,nbProt,1):
         caseEmpty=False
@@ -57,18 +50,20 @@ def initProteine(envSize,nbProt,scaleFactor,grainDiameter):
             z=random.randrange(0,envSize,grainDiameter)
             z=float(z)/scaleFactor
             listCoord=[x,y,z]
-            caseEmpty=caseIsEmpty(listProt,listCoord)
+            caseEmpty=caseIsEmpty(listProt,listCoord,envSize,scaleFactor,grainDiameter)
             if caseEmpty:
-                drawProt(listProt,listCoord,scaleFactor,grainDiameter)
+                drawProt(listProt,listCoord,scaleFactor,grainDiameter,associationProb,sizeActiveSite,nbActivesSites)
     return listProt
 
+
 # dessiner le proteine dans l'environnement blender : rotation, faces d'interet (site de liaison)...
-def drawProt(listProt,listCoord,scaleFactor,grainDiameter):
+def drawProt(listProt,listCoord,scaleFactor,grainDiameter,associationProb,sizeActiveSite,nbActivesSites):
     x,y,z=listCoord
     #creation d'une sphere
     nameS="Sphere"+str(len(listProt))
     bpy.ops.mesh.primitive_ico_sphere_add(size=grainDiameter/(scaleFactor*2), view_align=False, enter_editmode=False, location=(x, y, z), layers=(True, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False))
     bpy.context.object.name = nameS
+    objectBl=bpy.data.objects[nameS]
     #creation des poles:
     proteinFaces(nameS)
     #appli d'une rotation aleatoire
@@ -77,9 +72,11 @@ def drawProt(listProt,listCoord,scaleFactor,grainDiameter):
     bpy.ops.transform.rotate(axis=(a, b, c))
     #creation des grains
     listNeighbours=[]
-    protein=BiologicalGrain(listCoord,listRotate,listNeighbours,2)
-    grain=SimulatedGrain(protein,1,nameS)
+    protein=BiologicalGrain(listRotate,listNeighbours,associationProb)
+    grain=SimulatedGrain(protein,sizeActiveSite,nbActivesSites,objectBl)
     listProt.append(grain)
+    objectBl.keyframe_insert(data_path="location", index=-1)
+
 
 # determination aleatoire de l'angle de rotation de la proteine
 def angleRotation():
@@ -91,20 +88,13 @@ def angleRotation():
     c=c*(math.pi/180)
     return a,b,c
 
-# verrification pour savoir si une case d'interet est vide
-def caseIsEmpty(listProt,listCoord):
-    for protToCheck in listProt:
-        listCoordToCheck=protToCheck.BiologicalGrain.x,protToCheck.BiologicalGrain.y,protToCheck.BiologicalGrain.z
-        if listCoordToCheck==listCoord:
-            return False
-    return True
-  
+
 # determination des faces correspondantes aux sites de liaison
 def proteinFaces(objectName):
-        #def obj + face a colorier et attribuer une propriete
+    #def obj + face a colorier et attribuer une propriete
     obj=bpy.data.objects[objectName]
     obj.select=True
-    faces=obj.data.polygons
+    #faces=obj.data.polygons
     obj.data.calc_tessface()
     faces=obj.data.tessfaces
     
@@ -114,6 +104,10 @@ def proteinFaces(objectName):
     blue.diffuse_color = (0,0,1)
     yellow = bpy.data.materials.new('Yellow')
     yellow.diffuse_color = (1,1,0)
+    green = bpy.data.materials.new('Green')
+    green.diffuse_color = (0,1,0)
+    turquoise = bpy.data.materials.new('Turquoise')
+    turquoise.diffuse_color = (0,1,1)
     grey = bpy.data.materials.new('Grey')
     grey.diffuse_color = (0.5,0.5,0.5)
     
@@ -123,10 +117,11 @@ def proteinFaces(objectName):
     me.materials.append(red)
     me.materials.append(blue)
     me.materials.append(yellow)
+    me.materials.append(green)
+    me.materials.append(turquoise)
     
   # Assign materials to faces
     for f in faces:
-        #print(f.index)
         if f.index==78 or f.index==79:
             f.material_index=2
         elif f.index==10 or f.index==5:
@@ -135,40 +130,71 @@ def proteinFaces(objectName):
             f.material_index=3
         else:
             f.material_index=0
-        #f.material_index = f.index % 3
- 
-    # Set left half of sphere smooth, right half flat shading
-   
+
+##############################################################################################  
+
+# verification pour savoir si une case d'interet est vide
+def caseIsEmpty(listProt,listCoord,envSize,scaleFactor,grainDiameter):
+    #non déplacement non autorisé
+    epsilon=grainDiameter/(scaleFactor*2)
+    for i in range(len(listCoord)):
+        if (listCoord[i]<0):
+            listCoord[i]+=envSize/scaleFactor
+        #if ( ( (listCoord[i]*scaleFactor)-envSize )>0.0 ):
+        if listCoord[i]>envSize/scaleFactor :
+           # print(listCoord[i],scaleFactor,float(envSize),(listCoord[i]*scaleFactor)-float(envSize)) 
+            listCoord[i]-=envSize/scaleFactor
+    x1,y1,z1=listCoord
+    for protToCheck in listProt:
+        x2,y2,z2=protToCheck.objectBl.location[0],protToCheck.objectBl.location[1],protToCheck.objectBl.location[2]
+        #print(listCoord,listCoordToCheck)
+        if (x1>x2-epsilon and x1<x2+epsilon) and (y1>y2-epsilon and y1<y2+epsilon) and (z1>z2-epsilon and z1<z2+epsilon):
+            return False
+    return True
+  
+##############################################################################################  
+  
+  
 # determiner les molecules attachees en fonction de la distance entre les sites de liaisons
 def attacher(listProt,grainDiameter,scaleFactor):
-    #trouver les spheres attachées
-    #portLiees={}
     distance=grainDiameter/scaleFactor
     for i in range(len(listProt)-1):
-        x1=listProt[i].BiologicalGrain.x
-        y1=listProt[i].BiologicalGrain.y
-        z1=listProt[i].BiologicalGrain.z
+        x1=listProt[i].objectBl.location[0]
+        y1=listProt[i].objectBl.location[1]
+        z1=listProt[i].objectBl.location[2]
         for j in range(i+1,len(listProt)):
-            x2=listProt[j].BiologicalGrain.x
-            y2=listProt[j].BiologicalGrain.y
-            z2=listProt[j].BiologicalGrain.z
+            x2=listProt[j].objectBl.location[0]
+            y2=listProt[j].objectBl.location[1]
+            z2=listProt[j].objectBl.location[2]
             dx=x1-x2
             dy=y1-y2
             dz=z1-z2
             if (dx <distance and dx >-distance) and (dy <distance and dy >-distance) and (dz <distance and dz >-distance):
-                print ("proteine attachee !!!!!!!!!!!!!",dx,dy,dz)
                 listProt[i].BiologicalGrain.associatedNeighbours.append(listProt[j])
                 listProt[j].BiologicalGrain.associatedNeighbours.append(listProt[i])
 
+
+def sos(prot,listProt):
+    boolSOS=True
+    #for i in range(len(listProt)-1):
+    list1=[prot.objectBl.location[0],prot.objectBl.location[1],prot.objectBl.location[2]]
+    for j in range(0,len(listProt)):
+        list2=[listProt[j].objectBl.location[0],listProt[j].objectBl.location[1],listProt[j].objectBl.location[2]]
+        if (prot!=listProt[j] and list1==list2):
+            print("protein sup",prot.objectBl.name,listProt[j].objectBl.name)
+            boolSOS=False
+    return boolSOS
+
+
 # determiner les coord de chaque molecules en fonction de chaque frame
 def mouvementProt(listProt,envSize,scaleFactor,grainDiameter):
-    envSize=envSize/scaleFactor
-    frame_num =0#numero de la frame (pour le temps)
-    # Verrif que le bool est false (pas encore deplace)
-    attacher(listProt,grainDiameter,scaleFactor)
-    nbDeplacement=26
+    frame_num =5#numero de la frame (pour le temps)
+    nbDeplacement=40
     for position in range(nbDeplacement):
+        attacher(listProt,grainDiameter,scaleFactor)
+        print("new frame",position)
         indiceList=indice(listProt)
+        cpteur=0
         while len(indiceList)!=0:
             # choix d'une molecule aleatoirement
             i=random.randint(0,len(indiceList)-1)
@@ -180,54 +206,71 @@ def mouvementProt(listProt,envSize,scaleFactor,grainDiameter):
             if prot.moved==True:
                 mvtOK=True
                 indiceList.pop(i)
-            while mvtOK!=True:
+            while not mvtOK:
                 # calcul du mouvement
-                x=random.randrange(-grainDiameter,grainDiameter,grainDiameter)
+                x=random.randrange(-grainDiameter,grainDiameter+1,grainDiameter)
                 x=x/scaleFactor
-                y=random.randrange(-grainDiameter,grainDiameter,grainDiameter)
+                y=random.randrange(-grainDiameter,grainDiameter+1,grainDiameter)
                 y=y/scaleFactor
-                z=random.randrange(-grainDiameter,grainDiameter,grainDiameter)
+                z=random.randrange(-grainDiameter,grainDiameter+1,grainDiameter)
                 z=z/scaleFactor
                 move=[x,y,z]
                 # tests pour controler le mouvement
-                coordOfCurrentSphere = prot.BiologicalGrain.x,prot.BiologicalGrain.y,prot.BiologicalGrain.z
-                listCoord=[coordOfCurrentSphere[0]+x,coordOfCurrentSphere[1]+y,coordOfCurrentSphere[2]+z]
-                moveIsPossible=caseIsEmpty(listProt,listCoord)
-                if moveIsPossible==True:
+                sphereCoor = [float(prot.objectBl.location[0]),float(prot.objectBl.location[1]),float(prot.objectBl.location[2])]
+                listCoord=[float(sphereCoor[0]+x),float(sphereCoor[1]+y),float(sphereCoor[2]+z)]
+                listCoord2=listCoord.copy()
+                moveIsPossible=caseIsEmpty(listProt,listCoord2,envSize,scaleFactor,grainDiameter)
+                if moveIsPossible:
+                    #print("nia")
                     mvtOK=True
+                    cpteur+=1
                     deplacePosition(prot, x, y, z, scaleFactor)
+                    boolSos=sos(prot,listProt)
+                    if not boolSos :
+                        print("indicefail",len(indiceList),cpteur,x,y,z)
+                        print(sphereCoor)
+                        print(listCoord)
+                        print(listCoord2)
+                        print(prot.objectBl.location[0],prot.objectBl.location[1],prot.objectBl.location[2])
+                    if len(prot.BiologicalGrain.associatedNeighbours)!=0:
+                        test(prot, x, y, z, scaleFactor)
                     indiceList.pop(i)
         for prot in listProt:
             prot.moved=False
-        frame_num+=10
+        frame_num+=5
+
 
 def indice(listProt):
     indiceList=[]
     for i in range(len(listProt)):
         indiceList.append(i)
     return indiceList
-           
+
+# deplacer toutes les proteines attachees
+def test(prot, x, y, z, scaleFactor):
+    for assoProt in prot.BiologicalGrain.associatedNeighbours:
+        if assoProt.moved==False:
+            deplacePosition(assoProt, x, y, z, scaleFactor)
+            test(assoProt, x, y, z, scaleFactor)
+
+
 # l'environnement est considere comme inifini
 def deplacePosition(prot, x, y, z, scaleFactor):
-    bProt=bpy.data.objects[prot.name]
-    bProt.location[0]=bProt.location[0]+x
-    bProt.location[1]=bProt.location[1]+y
-    bProt.location[2]=bProt.location[2]+z
-    if bProt.location[0]<0:
-        bProt.location[0]=envSize/scaleFactor
-    if bProt.location[1]<0:
-        bProt.location[1]=envSize/scaleFactor
-    if bProt.location[2]<0:
-        bProt.location[2]=envSize/scaleFactor
-    if bProt.location[0]>envSize/scaleFactor:
-        bProt.location[0]=0
-    if bProt.location[1]>envSize/scaleFactor:
-        bProt.location[1]=0
-    if bProt.location[2]>envSize/scaleFactor:
-        bProt.location[2]=0
-    bProt.keyframe_insert(data_path="location", index=-1)
-    prot.BiologicalGrain.x,prot.BiologicalGrain.y,prot.BiologicalGrain.z=bProt.location[0],bProt.location[1],bProt.location[2]
+    obProt=prot.objectBl
+    obProt.location[0]=obProt.location[0]+x
+    obProt.location[1]=obProt.location[1]+y
+    obProt.location[2]=obProt.location[2]+z
+    for i in range(3):
+        if obProt.location[i]<0:
+            obProt.location[i]+=envSize/scaleFactor
+            
+        if  obProt.location[i]>envSize/scaleFactor:
+            obProt.location[i]-=envSize/scaleFactor
+            
+    obProt.keyframe_insert(data_path="location", index=-1)
     prot.moved=True
+
+##############################################################################################  
 
 #supprimer tous les objets de l'environnement avant de refaire une simulation   
 def clean():
@@ -239,16 +282,17 @@ def clean():
             bpy.ops.object.delete(use_global=False)
  
  
+##############################################################################################  
 
 #prog principal
 bpy.ops.object.mode_set(mode='OBJECT')
 clean()
-scaleFactor = 10
-grainDiameter = 2
-#grainDiameter,envSize,nbProt,associationProb,nbRunPerFrame,sizeActiveSite,nbActivesSites=choixEnviron()
-envSize,nbProt=choixEnviron()
+#lecture du fichier de parametres
+grainDiameter,envSize,nbProt,associationProb,nbRunPerFrame,nbRun,sizeActiveSite,nbActivesSites,scaleFactor=choixEnviron()
+nbProt=int(nbProt)
+nbActivesSites=int(nbActivesSites)
+#initialisation des spheres
 bpy.context.scene.frame_set(0)
-listProt=initProteine(envSize,nbProt,scaleFactor,grainDiameter)
+listProt=initProteine(envSize,nbProt,scaleFactor,grainDiameter,associationProb,sizeActiveSite,nbActivesSites)
+#deplacement des proteines
 mouvementProt(listProt,envSize,scaleFactor,grainDiameter)
-#attacher(listProt,grainDiameter,scaleFactor)   
-

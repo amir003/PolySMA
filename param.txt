@@ -1,0 +1,9 @@
+Diametre de la proteine : 2
+taille de l'environnement : 50
+nombre de proteine : 300
+probabilite d'association : 0.5
+nbRunPerFrame : 1
+nbRun : 40
+sizeActiveSite : 2
+nbActivesSites : 2
+scaleFactor : 10
