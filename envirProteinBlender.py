@@ -1,3 +1,7 @@
+#aide windows : file="C:/\\Users/\\Emilie/\\Desktop/\\IGEM/\\testEnvirProteinV10.py"
+# exec(compile(open(file).read(),file,'exec'))
+
+
 #import blender
 import bpy
 import random
@@ -5,6 +9,37 @@ import math
 import re
 import bmesh
 from bpy import context as C
+
+#grainDiameter,envSize,nbProt,associationProb,nbRunPerFrame,nbRun,sizeActiveSite,nbActivesSites,scaleFactor
+
+class DialogOperator(bpy.types.Operator):
+    bl_idname = "object.dialog_operator"
+    bl_label = "Simple Dialog Operator"
+    
+    grainDiameter = bpy.props.FloatProperty(name="diametre du grain",default=2)
+    envSize = bpy.props.FloatProperty(name="Taille de l'environnement",default=50)
+    nbProt = bpy.props.IntProperty(name="nombre de proteine",default=100,min=0)
+    associationProb = bpy.props.FloatProperty(name="proba asso ",default=0.5,min=0,max=1)
+    nbRunPerFrame = bpy.props.IntProperty(name="nombre de run par frame",default=5,min=1)
+    nbRun = bpy.props.IntProperty(name="nombre de run",default=10,min=1)
+    sizeActiveSite=bpy.props.IntProperty(name="taille du site de liaison",default=2)
+    nbActivesSites=bpy.props.IntProperty(name="nombre de site de liaison",default=2)
+    scaleFactor=bpy.props.IntProperty(name="facteur d'ajustement",default=10)
+    #temp = bpy.props.IntProperty(name="temperature",default=20)
+    
+    def execute(self, context):
+        message = "Popup Values: %f,%f,%i, %f,%i,%i,%i,%i, %i" % (self.grainDiameter,self.envSize,self.nbProt,self.associationProb,self.nbRunPerFrame,self.nbRun,self.sizeActiveSite,self.nbActivesSites,self.scaleFactor)
+        self.report({'INFO'}, message)
+        infoParam=message.split(":")[1]
+        tableauParam=infoParam.split(",")
+        main(tableauParam)
+        return {'FINISHED'}
+
+    def invoke(self, context, event):
+        wm = context.window_manager
+        return wm.invoke_props_dialog(self)
+
+
                                                                                                                                                                                          
 #determination des parametres de l'environnement
 def choixEnviron():
@@ -30,8 +65,7 @@ class BiologicalGrain:
 class SimulatedGrain:
     def __init__(self, bGrain,sizeActiveSite,nbActivesSites, objGrain):
         self.BiologicalGrain = bGrain
-        self.nbActivesSites =  nbActivesSites  
-        self.sizeActiveSite = sizeActiveSite
+        self.activesSites =  [sizeActiveSite,nbActivesSites]  
         self.moved=False
         self.objectBl=objGrain
         self.attach=False
@@ -40,6 +74,7 @@ class SimulatedGrain:
 # initialisation de l'environnement en terme de coordonnees des objets
 def initProteine(envSize,nbProt,scaleFactor,grainDiameter,associationProb,sizeActiveSite,nbActivesSites):
     listProt=[]
+    facesList=[]
     for i in range(0,nbProt,1):
         caseEmpty=False
         while not caseEmpty:
@@ -52,20 +87,20 @@ def initProteine(envSize,nbProt,scaleFactor,grainDiameter,associationProb,sizeAc
             listCoord=[x,y,z]
             caseEmpty=caseIsEmpty(listProt,listCoord,envSize,scaleFactor,grainDiameter)
             if caseEmpty:
-                drawProt(listProt,listCoord,scaleFactor,grainDiameter,associationProb,sizeActiveSite,nbActivesSites)
+                drawProt(listProt,listCoord,scaleFactor,grainDiameter,associationProb,sizeActiveSite,nbActivesSites,facesList)
     return listProt
 
 
 # dessiner le proteine dans l'environnement blender : rotation, faces d'interet (site de liaison)...
-def drawProt(listProt,listCoord,scaleFactor,grainDiameter,associationProb,sizeActiveSite,nbActivesSites):
+def drawProt(listProt,listCoord,scaleFactor,grainDiameter,associationProb,sizeActiveSite,nbActivesSites,facesList):
     x,y,z=listCoord
     #creation d'une sphere
     nameS="Sphere"+str(len(listProt))
     bpy.ops.mesh.primitive_ico_sphere_add(size=grainDiameter/(scaleFactor*2), view_align=False, enter_editmode=False, location=(x, y, z), layers=(True, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False))
     bpy.context.object.name = nameS
     objectBl=bpy.data.objects[nameS]
-    #creation des poles:
-    proteinFaces(nameS)
+    #creation des faces d'accroche:
+    proteinFaces(nameS,sizeActiveSite,nbActivesSites,facesList)
     #appli d'une rotation aleatoire
     a,b,c=angleRotation()
     listRotate=[a,b,c]
@@ -87,10 +122,15 @@ def angleRotation():
     c=random.randint(-360,360)
     c=c*(math.pi/180)
     return a,b,c
-
-
+  
+#def faces():
+    
+    
+    
+    
+    
 # determination des faces correspondantes aux sites de liaison
-def proteinFaces(objectName):
+def proteinFaces(objectName,sizeActiveSite,nbActivesSites,facesList):
     #def obj + face a colorier et attribuer une propriete
     obj=bpy.data.objects[objectName]
     obj.select=True
@@ -120,18 +160,20 @@ def proteinFaces(objectName):
     me.materials.append(green)
     me.materials.append(turquoise)
     
-  # Assign materials to faces
+    # Assign materials to faces
     for f in faces:
-        if f.index==78 or f.index==79:
-            f.material_index=2
-        elif f.index==10 or f.index==5:
-            f.material_index=1
-        elif f.index==0 or f.index==2:
-            f.material_index=3
-        else:
-            f.material_index=0
+        f.material_index=0
+        for nbFace in range(nbActivesSites):
+            if f.index==78 or f.index==79:
+                f.material_index=2
+            elif f.index==10 or f.index==5:
+                f.material_index=1
+            elif f.index==0 or f.index==2:
+                f.material_index=3
+            else:
+                f.material_index=0
 
-##############################################################################################  
+##############################################################################################
 
 # verification pour savoir si une case d'interet est vide
 def caseIsEmpty(listProt,listCoord,envSize,scaleFactor,grainDiameter):
@@ -153,10 +195,19 @@ def caseIsEmpty(listProt,listCoord,envSize,scaleFactor,grainDiameter):
     return True
   
 ##############################################################################################  
+# calcul d'un tableau de valeur d'association avant le lancement du run, retourne un tableau de valeur
+def tableauProbaAsso(nbProt,nbRun):
+    tableauProba=[];
+    for i in range(nbProt*nbRun):
+        proba=random.randint(0,100)
+        proba=proba/100
+        tableauProba.append(proba)
+    return tableauProba
+    
   
-  
-# determiner les molecules attachees en fonction de la distance entre les sites de liaisons
-def attacher(listProt,grainDiameter,scaleFactor):
+# determiner les molecules attachees en fonction de la distance entre les sites de liaisons + proba
+# probleme je ne m'interesse pas a la distance entre 2 faces mais entre les deux centres !!!!!
+def attacher(listProt,grainDiameter,scaleFactor,tableauProba,associationProb):
     distance=grainDiameter/scaleFactor
     for i in range(len(listProt)-1):
         x1=listProt[i].objectBl.location[0]
@@ -170,8 +221,13 @@ def attacher(listProt,grainDiameter,scaleFactor):
             dy=y1-y2
             dz=z1-z2
             if (dx <distance and dx >-distance) and (dy <distance and dy >-distance) and (dz <distance and dz >-distance):
-                listProt[i].BiologicalGrain.associatedNeighbours.append(listProt[j])
-                listProt[j].BiologicalGrain.associatedNeighbours.append(listProt[i])
+                elem=tableauProba[0]
+                tableauProba.remove(tableauProba[0])
+                print("attacher ",len(tableauProba)," proba ",elem)
+                if elem<=associationProb:
+                    listProt[i].BiologicalGrain.associatedNeighbours.append(listProt[j])
+                    listProt[j].BiologicalGrain.associatedNeighbours.append(listProt[i])
+                   
 
 
 def sos(prot,listProt):
@@ -187,11 +243,10 @@ def sos(prot,listProt):
 
 
 # determiner les coord de chaque molecules en fonction de chaque frame
-def mouvementProt(listProt,envSize,scaleFactor,grainDiameter):
-    frame_num =5#numero de la frame (pour le temps)
-    nbDeplacement=40
-    for position in range(nbDeplacement):
-        attacher(listProt,grainDiameter,scaleFactor)
+def mouvementProt(listProt,envSize,scaleFactor,grainDiameter,nbRunPerFrame,nbRun,tableauProba,associationProb):
+    frame_num =nbRunPerFrame#numero de la frame (pour le temps)
+    for position in range(nbRun):
+        attacher(listProt,grainDiameter,scaleFactor,tableauProba,associationProb)
         print("new frame",position)
         indiceList=indice(listProt)
         cpteur=0
@@ -224,7 +279,7 @@ def mouvementProt(listProt,envSize,scaleFactor,grainDiameter):
                     #print("nia")
                     mvtOK=True
                     cpteur+=1
-                    deplacePosition(prot, x, y, z, scaleFactor)
+                    deplacePosition(prot, x, y, z, scaleFactor,envSize)
                     boolSos=sos(prot,listProt)
                     if not boolSos :
                         print("indicefail",len(indiceList),cpteur,x,y,z)
@@ -233,11 +288,11 @@ def mouvementProt(listProt,envSize,scaleFactor,grainDiameter):
                         print(listCoord2)
                         print(prot.objectBl.location[0],prot.objectBl.location[1],prot.objectBl.location[2])
                     if len(prot.BiologicalGrain.associatedNeighbours)!=0:
-                        test(prot, x, y, z, scaleFactor)
+                        test(prot, x, y, z, scaleFactor,envSize)
                     indiceList.pop(i)
         for prot in listProt:
             prot.moved=False
-        frame_num+=5
+        frame_num+=nbRunPerFrame
 
 
 def indice(listProt):
@@ -247,15 +302,15 @@ def indice(listProt):
     return indiceList
 
 # deplacer toutes les proteines attachees
-def test(prot, x, y, z, scaleFactor):
+def test(prot, x, y, z, scaleFactor,envSize):
     for assoProt in prot.BiologicalGrain.associatedNeighbours:
         if assoProt.moved==False:
-            deplacePosition(assoProt, x, y, z, scaleFactor)
-            test(assoProt, x, y, z, scaleFactor)
+            deplacePosition(assoProt, x, y, z, scaleFactor,envSize)
+            test(assoProt, x, y, z, scaleFactor,envSize)
 
 
 # l'environnement est considere comme inifini
-def deplacePosition(prot, x, y, z, scaleFactor):
+def deplacePosition(prot, x, y, z, scaleFactor,envSize):
     obProt=prot.objectBl
     obProt.location[0]=obProt.location[0]+x
     obProt.location[1]=obProt.location[1]+y
@@ -284,15 +339,39 @@ def clean():
  
 ##############################################################################################  
 
+def main(tableauParam):
+    # reccup des param dans le popup 
+    grainDiameter,envSize,nbProt,associationProb,nbRunPerFrame,nbRun,sizeActiveSite,nbActivesSites,scaleFactor=tableauParam
+    grainDiameter=float(grainDiameter)
+    envSize=float(envSize)
+    nbProt=int(nbProt)
+    associationProb=float(associationProb)
+    nbRunPerFrame=int(nbRunPerFrame)
+    nbRun=int(nbRun)
+    sizeActiveSite=int(sizeActiveSite)
+    nbActivesSites=int(nbActivesSites)
+    scaleFactor=int(scaleFactor)
+    # creation d'un tableau de proba d'asso sans tenir compte de la valeur
+    tableauProba=tableauProbaAsso(nbProt,nbRun)
+    #initialisation des spheres
+    bpy.context.scene.frame_set(0)
+    listProt=initProteine(envSize,nbProt,scaleFactor,grainDiameter,associationProb,sizeActiveSite,nbActivesSites)
+    #deplacement des proteines
+    mouvementProt(listProt,envSize,scaleFactor,grainDiameter,nbRunPerFrame,nbRun,tableauProba,associationProb)
+##############################################################################################
+
+
+
 #prog principal
-bpy.ops.object.mode_set(mode='OBJECT')
+#bpy.ops.object.mode_set(mode='OBJECT')
 clean()
-#lecture du fichier de parametres
-grainDiameter,envSize,nbProt,associationProb,nbRunPerFrame,nbRun,sizeActiveSite,nbActivesSites,scaleFactor=choixEnviron()
-nbProt=int(nbProt)
-nbActivesSites=int(nbActivesSites)
-#initialisation des spheres
-bpy.context.scene.frame_set(0)
-listProt=initProteine(envSize,nbProt,scaleFactor,grainDiameter,associationProb,sizeActiveSite,nbActivesSites)
-#deplacement des proteines
-mouvementProt(listProt,envSize,scaleFactor,grainDiameter)
+
+#popup + main
+bpy.utils.register_class(DialogOperator)
+bpy.ops.object.dialog_operator('INVOKE_DEFAULT')
+
+
+
+
+
+
