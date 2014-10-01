@@ -331,8 +331,8 @@ def findBindingSitesForBinding(prot1, prot2):
 def getDistance(listCoord1, listCoord2):
     squareSum = 0
     for i in range(len(listCoord1)):
-        currentSum=listCoord1[i]+listCoord2[i]
-        squareSum+=currentSum*currentSum
+        currentCoord=listCoord1[i]-listCoord2[i]
+        squareSum+=currentCoord*currentCoord
     return math.sqrt(squareSum)
 
 
