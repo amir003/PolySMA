@@ -12,10 +12,10 @@ from bpy import context as C
 
 #grainDiameter,envSize,nbProt,associationProb,nbRunPerFrame,nbRun,sizeActiveSite,nbActivesSites,scaleFactor
 
-class DialogOperator(bpy.types.Operator):
+class DialogOperator(bpy.types.Operator): #fenetre appellee pour rentrer les parametres
     bl_idname = "object.dialog_operator"
     bl_label = "Simple Dialog Operator"
-    
+
     grainDiameter = bpy.props.FloatProperty(name="diametre du grain",default=2)
     envSize = bpy.props.FloatProperty(name="Taille de l'environnement",default=50)
     nbProt = bpy.props.IntProperty(name="nombre de proteine",default=100,min=0)
@@ -26,7 +26,7 @@ class DialogOperator(bpy.types.Operator):
     nbActivesSites=bpy.props.IntProperty(name="nombre de site de liaison",default=2)
     scaleFactor=bpy.props.IntProperty(name="facteur d'ajustement",default=10)
     #temp = bpy.props.IntProperty(name="temperature",default=20)
-    
+
     def execute(self, context):
         message = "Popup Values: %f,%f,%i, %f,%i,%i,%i,%i, %i" % (self.grainDiameter,self.envSize,self.nbProt,self.associationProb,self.nbRunPerFrame,self.nbRun,self.sizeActiveSite,self.nbActivesSites,self.scaleFactor)
         self.report({'INFO'}, message)
@@ -39,20 +39,6 @@ class DialogOperator(bpy.types.Operator):
         wm = context.window_manager
         return wm.invoke_props_dialog(self)
 
-
-                                                                                                                                                                                         
-#determination des parametres de l'environnement
-def choixEnviron():
-    print("Donnez le nom du fichier")
-    #fileName=raw_input()
-    file = open("param.txt", "r")
-    lines = file.readlines()
-    paramList=[]
-    for line in lines :
-        line=float(line.split(":")[1].split("#")[0])
-        paramList.append(line)
-    return paramList
-
 #classe grain biologique
 class BiologicalGrain:
     def __init__(self, coordinatesR,listOfNeighbours,associationProbability ):
@@ -60,17 +46,17 @@ class BiologicalGrain:
         self.associationProb = associationProbability
         self.associatedNeighbours = listOfNeighbours
 
-        
+
 #classe grain biologique
 class SimulatedGrain:
     def __init__(self, bGrain,sizeActiveSite,nbActivesSites, objGrain):
         self.BiologicalGrain = bGrain
-        self.activesSites =  [sizeActiveSite,nbActivesSites]  
+        self.activesSites =  [sizeActiveSite,nbActivesSites]
         self.moved=False
         self.objectBl=objGrain
         self.attach=False
-  
-##############################################################################################  
+
+##############################################################################################
 # initialisation de l'environnement en terme de coordonnees des objets
 def initProteine(envSize,nbProt,scaleFactor,grainDiameter,associationProb,sizeActiveSite,nbActivesSites):
     listProt=[]
@@ -122,13 +108,7 @@ def angleRotation():
     c=random.randint(-360,360)
     c=c*(math.pi/180)
     return a,b,c
-  
-#def faces():
-    
-    
-    
-    
-    
+
 # determination des faces correspondantes aux sites de liaison
 def proteinFaces(objectName,sizeActiveSite,nbActivesSites,facesList):
     #def obj + face a colorier et attribuer une propriete
@@ -137,7 +117,7 @@ def proteinFaces(objectName,sizeActiveSite,nbActivesSites,facesList):
     #faces=obj.data.polygons
     obj.data.calc_tessface()
     faces=obj.data.tessfaces
-    
+
     red = bpy.data.materials.new('Red')
     red.diffuse_color = (1,0,0)
     blue = bpy.data.materials.new('Blue')
@@ -150,7 +130,7 @@ def proteinFaces(objectName,sizeActiveSite,nbActivesSites,facesList):
     turquoise.diffuse_color = (0,1,1)
     grey = bpy.data.materials.new('Grey')
     grey.diffuse_color = (0.5,0.5,0.5)
-    
+
     ob = bpy.context.object
     me = ob.data
     me.materials.append(grey)
@@ -159,7 +139,7 @@ def proteinFaces(objectName,sizeActiveSite,nbActivesSites,facesList):
     me.materials.append(yellow)
     me.materials.append(green)
     me.materials.append(turquoise)
-    
+
     # Assign materials to faces
     for f in faces:
         f.material_index=0
@@ -184,7 +164,7 @@ def caseIsEmpty(listProt,listCoord,envSize,scaleFactor,grainDiameter):
             listCoord[i]+=envSize/scaleFactor
         #if ( ( (listCoord[i]*scaleFactor)-envSize )>0.0 ):
         if listCoord[i]>envSize/scaleFactor :
-           # print(listCoord[i],scaleFactor,float(envSize),(listCoord[i]*scaleFactor)-float(envSize)) 
+           # print(listCoord[i],scaleFactor,float(envSize),(listCoord[i]*scaleFactor)-float(envSize))
             listCoord[i]-=envSize/scaleFactor
     x1,y1,z1=listCoord
     for protToCheck in listProt:
@@ -193,8 +173,8 @@ def caseIsEmpty(listProt,listCoord,envSize,scaleFactor,grainDiameter):
         if (x1>x2-epsilon and x1<x2+epsilon) and (y1>y2-epsilon and y1<y2+epsilon) and (z1>z2-epsilon and z1<z2+epsilon):
             return False
     return True
-  
-##############################################################################################  
+
+##############################################################################################
 # calcul d'un tableau de valeur d'association avant le lancement du run, retourne un tableau de valeur
 def tableauProbaAsso(nbProt,nbRun):
     tableauProba=[];
@@ -203,8 +183,8 @@ def tableauProbaAsso(nbProt,nbRun):
         proba=proba/100
         tableauProba.append(proba)
     return tableauProba
-    
-  
+
+
 # determiner les molecules attachees en fonction de la distance entre les sites de liaisons + proba
 # probleme je ne m'interesse pas a la distance entre 2 faces mais entre les deux centres !!!!!
 def attacher(listProt,grainDiameter,scaleFactor,tableauProba,associationProb):
@@ -227,7 +207,7 @@ def attacher(listProt,grainDiameter,scaleFactor,tableauProba,associationProb):
                 if elem<=associationProb:
                     listProt[i].BiologicalGrain.associatedNeighbours.append(listProt[j])
                     listProt[j].BiologicalGrain.associatedNeighbours.append(listProt[i])
-                   
+
 
 
 def sos(prot,listProt):
@@ -296,10 +276,10 @@ def mouvementProt(listProt,envSize,scaleFactor,grainDiameter,nbRunPerFrame,nbRun
 
 
 def indice(listProt):
-    indiceList=[]
-    for i in range(len(listProt)):
-        indiceList.append(i)
-    return indiceList
+    #indiceList=[]
+    #for i in range(len(listProt)):
+    #    indiceList.append(i)
+    return range(len(listProt))
 
 # deplacer toutes les proteines attachees
 def test(prot, x, y, z, scaleFactor,envSize):
@@ -309,7 +289,7 @@ def test(prot, x, y, z, scaleFactor,envSize):
             test(assoProt, x, y, z, scaleFactor,envSize)
 
 
-# l'environnement est considere comme inifini
+# l'environnement est considere comme infini (TOR)
 def deplacePosition(prot, x, y, z, scaleFactor,envSize):
     obProt=prot.objectBl
     obProt.location[0]=obProt.location[0]+x
@@ -318,16 +298,16 @@ def deplacePosition(prot, x, y, z, scaleFactor,envSize):
     for i in range(3):
         if obProt.location[i]<0:
             obProt.location[i]+=envSize/scaleFactor
-            
+
         if  obProt.location[i]>envSize/scaleFactor:
             obProt.location[i]-=envSize/scaleFactor
-            
+
     obProt.keyframe_insert(data_path="location", index=-1)
     prot.moved=True
 
-##############################################################################################  
+##############################################################################################
 
-#supprimer tous les objets de l'environnement avant de refaire une simulation   
+#supprimer tous les objets de l'environnement avant de refaire une simulation
 def clean():
     for obj in bpy.data.objects:
         currentName=obj.name
@@ -335,12 +315,12 @@ def clean():
         if("Cube" in currentName or "Sphere" in currentName):
             obj.select=True
             bpy.ops.object.delete(use_global=False)
- 
- 
-##############################################################################################  
+
+
+##############################################################################################
 
 def main(tableauParam):
-    # reccup des param dans le popup 
+    # reccup des param dans le popup
     grainDiameter,envSize,nbProt,associationProb,nbRunPerFrame,nbRun,sizeActiveSite,nbActivesSites,scaleFactor=tableauParam
     grainDiameter=float(grainDiameter)
     envSize=float(envSize)
@@ -369,9 +349,3 @@ clean()
 #popup + main
 bpy.utils.register_class(DialogOperator)
 bpy.ops.object.dialog_operator('INVOKE_DEFAULT')
-
-
-
-
-
-
