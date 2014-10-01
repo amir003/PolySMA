@@ -12,7 +12,8 @@ from bpy import context as C
 
 #grainDiameter,envSize,nbProt,associationProb,nbRunPerFrame,nbRun,sizeActiveSite,nbActivesSites,scaleFactor
 
-class DialogOperator(bpy.types.Operator): #fenetre appellee pour rentrer les parametres
+#fenetre appellee pour rentrer les parametres :
+class DialogOperator(bpy.types.Operator):
     bl_idname = "object.dialog_operator"
     bl_label = "Simple Dialog Operator"
 
@@ -216,7 +217,7 @@ def sos(prot,listProt):
     list1=[prot.objectBl.location[0],prot.objectBl.location[1],prot.objectBl.location[2]]
     for j in range(0,len(listProt)):
         list2=[listProt[j].objectBl.location[0],listProt[j].objectBl.location[1],listProt[j].objectBl.location[2]]
-        if (prot!=listProt[j] and list1==list2):
+        if (prot!=listProt[j] and list1==list2):#si meme proteine et meme coordonnees alors pb
             print("protein sup",prot.objectBl.name,listProt[j].objectBl.name)
             boolSOS=False
     return boolSOS
@@ -224,6 +225,7 @@ def sos(prot,listProt):
 
 # determiner les coord de chaque molecules en fonction de chaque frame
 def mouvementProt(listProt,envSize,scaleFactor,grainDiameter,nbRunPerFrame,nbRun,tableauProba,associationProb):
+    debug=false
     frame_num =nbRunPerFrame#numero de la frame (pour le temps)
     for position in range(nbRun):
         attacher(listProt,grainDiameter,scaleFactor,tableauProba,associationProb)
@@ -260,13 +262,14 @@ def mouvementProt(listProt,envSize,scaleFactor,grainDiameter,nbRunPerFrame,nbRun
                     mvtOK=True
                     cpteur+=1
                     deplacePosition(prot, x, y, z, scaleFactor,envSize)
-                    boolSos=sos(prot,listProt)
-                    if not boolSos :
-                        print("indicefail",len(indiceList),cpteur,x,y,z)
-                        print(sphereCoor)
-                        print(listCoord)
-                        print(listCoord2)
-                        print(prot.objectBl.location[0],prot.objectBl.location[1],prot.objectBl.location[2])
+                    if debug :
+                        boolSos=sos(prot,listProt)
+                        if not boolSos :
+                            print("indicefail",len(indiceList),cpteur,x,y,z)
+                            print(sphereCoor)
+                            print(listCoord)
+                            print(listCoord2)
+                            print(prot.objectBl.location[0],prot.objectBl.location[1],prot.objectBl.location[2])
                     if len(prot.BiologicalGrain.associatedNeighbours)!=0:
                         test(prot, x, y, z, scaleFactor,envSize)
                     indiceList.pop(i)
@@ -304,6 +307,34 @@ def deplacePosition(prot, x, y, z, scaleFactor,envSize):
 
     obProt.keyframe_insert(data_path="location", index=-1)
     prot.moved=True
+
+def findBindingSitesForBinding(prot1, prot2):
+    #prot 1 et 2 sont des grains simules
+    #1 -on prend le milieu des deux centres
+    coordProt1=prot1.objectBl.location
+    coordProt2=prot2.objectBl.location
+    coordMilieu=[0,0,0]
+    for i in range(3) :
+        coordMilieu[i]=(coordProt1[i]+coordProt2[i])/2.0
+    #2-pour chaque prot on cherche le site actif le plus proche du milieu et ses voisins
+    for i in range(2):
+        currentProt=prot1
+        if i=1 :
+            currentProt=prot2
+        currentBindingSites=[] #a modif
+        currentDist=[]
+        for bindingSite in currentBindingSites:
+            currentDist=getDistance(bindingSite.coord,coordMilieu)#a modif?
+    #a continuer
+
+#distance euclidienne dans un espace a n dimension
+def getDistance(listCoord1, listCoord2):
+    squareSum = 0
+    for i in range(len(listCoord1)):
+        currentSum=listCoord1[i]+listCoord2[i]
+        squareSum+=currentSum*currentSum
+    return math.sqrt(squareSum)
+
 
 ##############################################################################################
 
