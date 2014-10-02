@@ -225,7 +225,7 @@ def sos(prot,listProt):
 
 # determiner les coord de chaque molecules en fonction de chaque frame
 def mouvementProt(listProt,envSize,scaleFactor,grainDiameter,nbRunPerFrame,nbRun,tableauProba,associationProb):
-    debug=false
+    debug=False
     frame_num =nbRunPerFrame#numero de la frame (pour le temps)
     for position in range(nbRun):
         attacher(listProt,grainDiameter,scaleFactor,tableauProba,associationProb)
@@ -282,7 +282,7 @@ def indice(listProt):
     #indiceList=[]
     #for i in range(len(listProt)):
     #    indiceList.append(i)
-    return range(len(listProt))
+    return list(range(len(listProt)))
 
 # deplacer toutes les proteines attachees
 def test(prot, x, y, z, scaleFactor,envSize):
@@ -319,7 +319,7 @@ def findBindingSitesForBinding(prot1, prot2):
     #2-pour chaque prot on cherche le site actif le plus proche du milieu et ses voisins
     for i in range(2):
         currentProt=prot1
-        if i=1 :
+        if i==1 :
             currentProt=prot2
         currentBindingSites=[] #a modif
         currentDist=[]
@@ -380,3 +380,4 @@ clean()
 #popup + main
 bpy.utils.register_class(DialogOperator)
 bpy.ops.object.dialog_operator('INVOKE_DEFAULT')
+
