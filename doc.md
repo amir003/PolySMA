@@ -55,8 +55,29 @@ L'environnement de simulation, c'est à dire l'endroit où les protéines peuven
 
 L'utilisateur pourra donc choisir la taille de l'environnement et aussi le nombre de protéines simulées. En paramétrant ces deux variables, la concentration de protéines dans l'environnement est changé.
 
-Comme dit précédemement, lors du déplacement d'une protéine, il faut choisir ce qu'il se produit lorsque celle-ci arrive au bord de l'environnement simulé.  Ici, la simulation va feindre un domaine infini en repliant l'espace bord à bord (appélé configuration torique). En effet, si une protéine arrive en bas du cube simulé, elle est alors placée en haut de ce dernier.
+Comme dit précédemement, lors du déplacement d'une protéine, il faut choisir ce qu'il se produit lorsque celle-ci arrive au bord de l'environnement simulé.  Ici, la simulation va feindre un domaine infini en repliant l'espace bord à bord (appélé configuration torique). Par exemple, si une protéine arrive en bas du cube simulé, elle est alors placée en haut de ce dernier.
 
 **Les protéines simulées**
 
-Comme dit précédemment, les protéines
+Comme dit précédemment, les protéines sont simulées par des grains (ou objet sphérique). Dans cette simulation, nous avons besoin de deux types d'informations : celles liées au grain biologique (coordonées, positions des sites de liaison,...) et celles liées au grain simulé (objet blender,..).
+
+Il serait donc logique d'utiliser une structure "grain biologique" qui stockerait pour chaque protéine :
+  - les informations de coordonées
+  - les positions des sites de liaison
+  - les protéines auquelles elle est attachée
+  - la probabilité d'association avec une autre protéine
+
+La structure grain simulé quant à elle contiendrait :
+  - le grain biologique
+  - l'objet blender
+  - information disant si le grain a été déplacé dans le tour de déplacement actuel
+
+Ces informations sont résumées ci dessous :
+![Diagramme_Classe](https://raw.githubusercontent.com/amir003/PolySMA/master/ressources/classes_conception.png)
+
+*Placement initial des protéines*
+
+*Déplacement des protéines*
+
+Réalistation
+------------
