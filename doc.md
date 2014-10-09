@@ -52,7 +52,6 @@ Conception
 
 L'environnement de simulation, c'est à dire l'endroit où les protéines peuvent se déplacer, sera représenté par un cube d'une dimension choisi par l'utilisateur.
 
-
 L'utilisateur pourra donc choisir la taille de l'environnement et aussi le nombre de protéines simulées. En paramétrant ces deux variables, la concentration de protéines dans l'environnement est changé.
 
 Comme dit précédemement, lors du déplacement d'une protéine, il faut choisir ce qu'il se produit lorsque celle-ci arrive au bord de l'environnement simulé.  Ici, la simulation va feindre un domaine infini en repliant l'espace bord à bord (appélé configuration torique). Par exemple, si une protéine arrive en bas du cube simulé, elle est alors placée en haut de ce dernier.
@@ -77,7 +76,15 @@ Ces informations sont résumées ci dessous :
 
 *Placement initial des protéines*
 
+Pour le placement initial des protéines, le programme va tout d'abord déterminé aléatoirement leur position.
+
+Les sites actifs sont positionnés aux mêmes endroits pour toutes les sphères, ces endroits étant déterminés aléatoirement et répartis de façon uniforme. Ensuite, le programme applique une rotation aléatoire sur chaque sphére créée.
+
 *Déplacement des protéines*
 
-Réalistation
-------------
+Comme dit précédemement, les protéines sont déplacés aléatoirement par petits mouvements (chacun n'exédant pas la taille de la protéine). Les protéines à déplacer sont choisies au hasard et sont toutes déplacées une fois durant chaque tour.
+
+Lors de chaque déplacement, si une protéine est suffisament proche le programme teste l'association et détermine quels sont les deux sites qui vont se lier. S'il y a association, la zone du site actif va être rapprochée du centre (compression) et la probabilité d'accrochage des sites adjacents augmente.
+
+Fonctionnement de l'interface
+-----------------------------
