@@ -45,6 +45,7 @@ So, Blender has been choose for more simplicity. The language used to program wi
 
 Conception
 ----------
+
 **Simulated environment**
 
 The simulated environment, meaning the area where proteins can moved, will be represented by a cube which size is defined by the user.
@@ -82,3 +83,6 @@ The active sites are positioned at the same locations for all spheres, these loc
 As mentioned previously, proteins are randomly moved by small steps (each is smaller than the protein size). The proteins to move are randomly selected and are all moved once during each round.
 
 During each movement, if a protein is close enough to the current protein, the program tests if the association occurs and determines the two sites which participate to this binding. If binding occurs, the area of the binding site will be put closer to the center of the sphere (compression) and the adjacent sites binding probability increases.
+
+Interface utilisation
+---------------------
