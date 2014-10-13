@@ -69,7 +69,7 @@ The grain simulated structure could contain:
  - an information saying if the grain was moved around during the current movement round.
 
 This information is summarized in the figure below:
-![Class_Diagram](https://raw.githubusercontent.com/amir003/PolySMA/master/ressources/classes_conception.png)
+![Class_Diagram](https://raw.githubusercontent.com/amir003/PolySMA/master/ressources/class_conception-en.png)
 
 *Initial positioning of proteins*
 
