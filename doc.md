@@ -8,7 +8,6 @@ Ce programme a été fait pour l'igem 2014 dans le cadre du projet Elasticoli. C
 
 PolySMA a été conçu pour essayer de mieux comprendre comment ces protéines s'associer. En effet, polySMA est un programme ayant pour objectif de modéliser ces protéines et leurs interactions dans un environnement en trois dimensions.
 
-
 Analyse
 -------
 
@@ -43,7 +42,6 @@ Blender dispose d'une interface permettant à l'utilisateur d'interagir avec l'e
 Soya3D et vPython sont des modules python permettant de représenter en 3D des objets. Cependant, par défault, à l'éxecution, il présente une fenêtre trop simple perettant peu 'interactions avec l'utilisateur.
 
 Blender a donc été choisi pour plus de simplicité. Le language utilisé pour programmer sera donc python 3.
-
 
 Conception
 ----------
