@@ -30,3 +30,18 @@ The temperature could be modified in the simulated model. Temperature effect is 
 Finally, when a protein is moved, we need to decide what happens when it goes to an edge of the simulated environement.
 
 **State of the art of 3D modeling softwares**
+
+Now that we know what we will simulate, we need to show it and interact with the user. In this aim, we need to choose a software or some libraries which can model in three dimensions and give to the user the means to interact with the resultant visualization (the user must be able to "move" in it).
+
+*Blender*
+
+The Blender interface allows to interact with the 3D environment simulated. With this software, we can easily animate objects (and so we can model time). Finally, the software has an API in Python easily usable (which allows to write programs which use it).
+
+*Soya3D and vPython*
+
+Soya3D and vPython are python librairies allowing to model objects in 3D. However, by default, they show a window too simple allowing few interactions with the user
+
+So, Blender has been choose for more simplicity. The language used to program will be Python 3 (because it's the language used by the Blender API).
+
+Conception
+----------
