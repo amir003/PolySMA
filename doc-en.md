@@ -45,3 +45,40 @@ So, Blender has been choose for more simplicity. The language used to program wi
 
 Conception
 ----------
+**Simulated environment**
+
+The simulated environment, meaning the area where proteins can moved, will be represented by a cube which size is defined by the user.
+
+So the user can choose the environment size and also the number of simulated proteins. By setting these two variables, the protein concentration in the environment is changed.
+
+As previously stated, when a protein is moved, we need to decide what happens when it reaches an edge of the simulated environement. Here, simulation will feign a infinite space by folding the space edge to edge (called toric configuration). For example, if a protein reaches the bottom edge of the simulated cube, so it is put at the top of this cube.
+
+**Simulated proteins**
+
+As previously stated, proteins are simulated by grains (spherical object). In this situation, we need two types of information : those link to the biologic grain (coordinates, positions of binding sites...) and those link with to the simulated grain (blender object, ...)..
+
+It makes sense to use a structure "biological grain" which store for each protein :
+ - coordinates
+ - positions of the binding sites
+ - proteins which are bind to it
+ - the association probability with an other protein
+
+The grain simulated structure could contain:
+ - the biological grain
+ - the Blender object
+ - an information saying if the grain was moved around during the current movement round.
+
+This information is summarized in the figure below:
+![Class_Diagram](https://raw.githubusercontent.com/amir003/PolySMA/master/ressources/classes_conception.png)
+
+*Initial positioning of proteins*
+
+For the initial placement of proteins, the program will first randomly determined their positions.
+
+The active sites are positioned at the same locations for all spheres, these locations are determined randomly and evenly distributed. Then, the program applies a random rotation on each sphere created.
+
+*Protein movements*
+
+As mentioned previously, proteins are randomly moved by small steps (each is smaller than the protein size). The proteins to move are randomly selected and are all moved once during each round.
+
+During each movement, if a protein is close enough to the current protein, the program tests if the association occurs and determines the two sites which participate to this binding. If binding occurs, the area of the binding site will be put closer to the center of the sphere (compression) and the adjacent sites binding probability increases.
