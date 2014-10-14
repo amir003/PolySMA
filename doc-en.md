@@ -87,7 +87,7 @@ During each movement, if a protein is close enough to the current protein, the p
 User interface
 --------------
 
-![settings window](https://raw.githubusercontent.com/amir003/PolySMA/master/ressources/setting_window.png)
+![settings window](https://raw.githubusercontent.com/amir003/PolySMA/master/ressources/settings_window.png)
 
 When the user runs the Python script in the free software Blender, a popup window appears with different parameters. The user can modify the simulation and choose parameters like grain diameter, environment size, number of protein, run, temperature… Default parameters are programmed.
 
