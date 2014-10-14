@@ -83,6 +83,3 @@ Les sites actifs sont positionnés aux mêmes endroits pour toutes les sphères,
 Comme dit précédemement, les protéines sont déplacés aléatoirement par petits mouvements (chacun n'exédant pas la taille de la protéine). Les protéines à déplacer sont choisies au hasard et sont toutes déplacées une fois durant chaque tour.
 
 Lors de chaque déplacement, si une protéine est suffisament proche le programme teste l'association et détermine quels sont les deux sites qui vont se lier. S'il y a association, la zone du site actif va être rapprochée du centre (compression) et la probabilité d'accrochage des sites adjacents augmente.
-
-Fonctionnement de l'interface
------------------------------

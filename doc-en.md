@@ -96,4 +96,4 @@ The user can write the parameters or use arrows to change the values. When he is
 After, the result appear on the Blender window. The user can change the visualization axes to see the protein in the 3D environment. At the beginning all proteins are single and after the simulation groups of protein can be made randomly. The user can see the evolution between run with Blender software.
 
 ![simulation visualization](https://raw.githubusercontent.com/amir003/PolySMA/master/ressources/simulation_visualization.png)
-*This is an example of the simulation with 100 proteins after 5 runs at a temperature of 37°C. The proteins are purple when they are single, unbinding and they become pink when they are binding. It helps for the visualization.*
+*This is an example of the simulation with 100 proteins at the beginning (image on the left) and after 5 runs (image on the right) at a temperature of 37°C. The proteins are purple when they are single, unbinding and they become pink when they are binding. It helps for the visualization.*
