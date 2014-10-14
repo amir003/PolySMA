@@ -84,5 +84,16 @@ As mentioned previously, proteins are randomly moved by small steps (each is sma
 
 During each movement, if a protein is close enough to the current protein, the program tests if the association occurs and determines the two sites which participate to this binding. If binding occurs, the area of the binding site will be put closer to the center of the sphere (compression) and the adjacent sites binding probability increases.
 
-Interface utilisation
----------------------
+User interface
+--------------
+
+![settings window](https://raw.githubusercontent.com/amir003/PolySMA/master/ressources/setting_window.png)
+
+When the user runs the Python script in the free software Blender, a popup window appears with different parameters. The user can modify the simulation and choose parameters like grain diameter, environment size, number of protein, run, temperature… Default parameters are programmed.
+
+The user can write the parameters or use arrows to change the values. When he is satisfied, he can accept the result and click on “OK”. After this operation the script uses the parameters to calculate the protein positions and the simulation begins.
+
+After, the result appear on the Blender window. The user can change the visualization axes to see the protein in the 3D environment. At the beginning all proteins are single and after the simulation groups of protein can be made randomly. The user can see the evolution between run with Blender software.
+
+![simulation visualization](https://raw.githubusercontent.com/amir003/PolySMA/master/ressources/simulation_visualization.png)
+*This is an example of the simulation with 100 proteins after 5 runs at a temperature of 37°C. The proteins are purple when they are single, unbinding and they become pink when they are binding. It helps for the visualization.*
